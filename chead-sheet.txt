@@ -1,0 +1,162 @@
+Kubernetes Commands and Examples
+Create a Pod object
+kubectl apply -f <path to yaml file>
+Example:
+kubectl apply -f ./k8s/hello-k8s-pod.yaml
+
+List pods
+kubectl get pods
+
+Get details of pod
+kubectl describe pod <pod name>
+
+View logs of pod
+kubectl logs <pod name>
+Example:
+kubectl logs hello-k8s
+kubectl logs -f hello-k8s
+
+-f: to view logs in real time
+Access application using port forwarding
+kubectl port-forward <pod name> <local PORT>:<container PORT>
+Example:
+kubectl port-forward hello-k8s 4000:5000
+
+Delete a Pod
+kubectl delete pod <pod name>
+kubectl delete pods -l <label_selector>
+kubectl delete -f <path to yaml file>
+kubectl delete pods --all
+Example:
+kubectl delete pods -l app/name=hello-k8s
+kubectl delete -f ./k8s/hello-k8s-pod.yaml
+
+View Services
+kubectl get services
+
+Create & View namespace
+kubectl create namespace <namespace_name>
+Example:
+kubectl create namespace hello-ns
+
+Create using YAML File
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: hello-ns
+Apply the file using:
+kubectl apply -f namespace.yaml
+
+View pods and services in the namespace:
+kubectl get pods,services -n hello-ns
+
+Delete namespace: kubectl delete namespace hello-ns
+
+View Deployments
+kubectl get deployments
+kubectl get deployments -n <namespace>
+
+View all objects
+kubectl get all
+kubectl get all -n <namespace>
+
+Open shell in Pod
+kubectl exec -it <pod-name> -n <namespace> -- /bin/sh
+
+RollBack to previous rollout
+kubectl rollout undo deployment/<deployment name>
+kubectl rollout undo deployment/<deployment name> -n <namespace>
+Example:
+kubectl rollout undo deployment/hello-k8s-deployment -n hello-ns
+
+Install metric server Run the following command to install the Metrics Server:
+
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+By default, Metrics Server won't work inside Docker Desktop due to certificate issues. Fix this by patching the deployment. This disables TLS verification, which is necessary for Docker Desktop's local cluster.
+
+kubectl patch deployment metrics-server -n kube-system --type 'json' -p '[{"op": "add", "path": "/spec/template/spec/containers/0/args/-", "value": "--kubelet-insecure-tls"}]'
+Check if the Metrics Server is working properly:
+kubectl get deployment metrics-server -n kube-system
+
+Below kubectl top pods command shows real-time resource usage (CPU & memory) for all running pods in your Kubernetes cluster.
+kubectl top pods
+
+Persistent Volumes & Persistent Volume Claims
+Persistent Volumes (PVs) are cluster-scoped resources, meaning they are not tied to a specific namespace.
+Persistent Volume Claims (PVCs) are namespace-scoped, but they are not part of the kubectl get all default output.
+View PVCs in namespace
+kubectl get pvc -n <namespace>
+Example:
+kubectl get pvc -n mern-ns
+View PVs
+kubectl get pv
+Delete PVC
+kubectl delete pvc <pvc-name> -n <namespace>
+Example:
+kubectl delete pvc mongodb-storage-mongodb-0 -n mern-ns
+
+Create Secret using CLI
+ kubectl create secret <secret-type> <secret-name> --from-literal=<KEY>=<VALUE> -n <namespace>
+Example -
+ kubectl create secret generic mongodb-cred --from-literal=MONGO_INITDB_ROOT_USERNAME=admin --from-literal=MONGO_INITDB_ROOT_PASSWORD=admin123 -n mern-ns
+
+View Secret Yaml -
+kubectl get secret <secret-name> -o yaml -n <namespace>
+Example -
+kubectl get secret mongodb-cred -o yaml -n mern-ns
+
+Delete all resources
+Delete Everything in the Namespace: If you want to delete all resources (Pods, Services, Deployments, PVCs, ConfigMaps, Secrets, etc.) in the namespace:
+kubectl delete all --all -n <namespace>
+Delete the Namespace (and All Resources Within): If you want to delete the namespace itself, along with all resources inside it:
+kubectl delete namespace <namespace>
+
+Kubectl context
+kubectl config get-contexts: list all the context
+kubectl config use-context docker-desktop: used to switch context
+
+Helm Commands and Examples
+List, Add, Remove Repositories
+helm repo <commands>
+helm repo list: List added repositories
+helm repo add <repo-name> <repo-url>: Add a repository from the internet
+helm repo update: Ensures you have the latest chart versions available
+helm search repo <keyword>: Search repositories for a keyword in charts
+helm search repo <keyword> --versions : to list all the versions available for chart
+helm repo remove <repo_name>: Remove one or more repositories
+
+Example:
+
+helm repo add bitnami https://charts.bitnami.com/bitnami 
+helm search repo bitnami 
+helm search repo bitnami/mongodb --versions
+Install helm package/chart
+helm install <name> <chart> : Install the chart with a name
+helm install <name> <chart> --version <chart-version>  : Install specific version of chart
+helm install <name> <chart> --namespace <namespace> --create-namespace: Install the chart in a specific namespace
+helm install <name> <path-to-chart> -n <namespace>: Install the chart from local setup then provide path to chart
+helm upgrade <name> <path-to-chart> -n <namespace> : To upgrade existing helm release/chart
+helm list : Lists the installed chart
+helm uninstall <name> : uninstalls the release/chart
+helm status <name>  : to gets details of release/chart
+helm status <name> --show-resources: lists the resources that were created as part of release (eg deployment,svc etc)
+
+Example:
+
+helm install mongodb bitnami/mongodb
+helm install nginx bitnami/nginx 
+helm uninstall nginx
+Create chart and Overide values
+helm create <chart-name>: It will create a chart with necessary folder structure
+helm install <name> <chart> -f <path-to-custom-values> -n  <namespace> : to overide default values of chart
+helm get values <name> -n <namespace>: to get values passed to release
+helm package <path-to-chart> -d packages/: to convert helm chart into a package
+helm install <name> <path-to-package>: to install from package
+Example:
+
+helm install mongodb bitnami/mongodb -f ./mongodb/values.yaml -n  mern-ns
+helm install mongodb bitnami/mongodb -f ./mongodb/values.yaml --version 16.4.2 -n  mern-ns 
+helm get values mongodb -n mern-ns
+helm package backend -d packages/
+helm install backend ./packages/backend-0.1.0.tgz
