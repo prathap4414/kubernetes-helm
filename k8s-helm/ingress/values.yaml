@@ -1,0 +1,10 @@
+name: ingress-rule
+namespace: mern-ns
+ingressClassName: nginx
+rules:
+  - path: /
+    name: frontend-service
+    port: 80
+  - path: /api/
+    name: backend-service
+    port: 5000

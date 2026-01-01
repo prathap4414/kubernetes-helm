@@ -1,0 +1,5 @@
+name: frontend-deployment
+namespace: mern-ns
+label: frontend-app
+image: prathap4414/frontend-img:v1
+port: 80

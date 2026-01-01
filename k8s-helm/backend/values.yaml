@@ -1,0 +1,7 @@
+name : backend-deployment
+namespace: mern-ns
+label : backend-app
+image: prathap4414/backend-img
+containerPort: 5000
+secret: mongo-secret
+uri: "mongodb://$(MONGO_INITDB_ROOT_USERNAME):$(MONGO_INITDB_ROOT_PASSWORD)@mongodb-headless:27017/prathu-db?authSource=admin"

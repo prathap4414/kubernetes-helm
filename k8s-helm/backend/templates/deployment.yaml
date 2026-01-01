@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{.Values.name}}
+  namespace: {{.Values.namespace}}
+spec:
+  selector:
+    matchLabels:
+      app: {{.Values.label}}
+  template:
+    metadata:
+      labels:
+        app: {{.Values.label}}
+    spec:
+      containers:
+      - name: backend-container
+        image: {{.Values.image}}
+        envFrom:
+          - secretRef:
+              name: {{.Values.secret}}
+        env:
+          - name: MONGOURI
+            value: {{.Values.uri}}
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: {{.Values.containerPort}}
